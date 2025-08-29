@@ -1,4 +1,0 @@
-C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/CMakeFiles/OpenGLProject.dir
-C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/CMakeFiles/dist.dir
-C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/CMakeFiles/edit_cache.dir
-C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/CMakeFiles/rebuild_cache.dir
