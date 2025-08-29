@@ -1,0 +1,26 @@
+# ninja log v6
+1249	1735	7781606030851283	OpenGLProject.exe	114a006a9906c653
+16	892	7773471144834644	CMakeFiles/OpenGLProject.dir/src/main.cpp.obj	10a40cae305e03
+6	110	7773461694958831	CMakeFiles/dist	b008795daba373fc
+6	110	7773461694958831	C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/CMakeFiles/dist	b008795daba373fc
+10	1248	7781606018463378	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+36	1404	7775921112616739	CMakeFiles/OpenGLProject.dir/src/main/basics.cpp.obj	ee2846bf454e28b
+23	1020	7781567568932898	CMakeFiles/OpenGLProject.dir/src/main/lighting.cpp.obj	ca129177f8911054
+16	1640	7781617871029916	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1640	2307	7781617887274565	OpenGLProject.exe	b12e9c9569b7b65a
+8	1231	7781618346447044	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1231	1827	7781618358683248	OpenGLProject.exe	b12e9c9569b7b65a
+8	1262	7781622891436821	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1263	1893	7781622903993420	OpenGLProject.exe	b12e9c9569b7b65a
+7	1263	7781623269379558	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1264	1843	7781623281950504	OpenGLProject.exe	b12e9c9569b7b65a
+7	1258	7781624473456505	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1259	1877	7781624485982121	OpenGLProject.exe	b12e9c9569b7b65a
+7	1278	7781624726286611	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1279	1852	7781624739002537	OpenGLProject.exe	b12e9c9569b7b65a
+18	1265	7781624836964894	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1265	1862	7781624849441195	OpenGLProject.exe	b12e9c9569b7b65a
+7	1260	7781626414454372	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1261	1857	7781626426990049	OpenGLProject.exe	b12e9c9569b7b65a
+7	1258	7781626879256780	CMakeFiles/OpenGLProject.dir/src/main/main.cpp.obj	ae831f2faafc851e
+1258	1876	7781626891763198	OpenGLProject.exe	b12e9c9569b7b65a

@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "MSVC",
+            "compilerPath": "cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64",
+            "compileCommands": [
+                "C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build/compile_commands.json"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "C:/Users/panfr/Documents/vcpkg/installed/x64-windows/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}

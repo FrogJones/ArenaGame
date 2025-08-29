@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/panfr/OneDrive/VSCode/C++/OpenGL/build",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1444~1.352\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -DGLFW_DLL -IC:\\Users\\panfr\\OneDrive\\VSCode\\C++\\OpenGL\\src\\include -external:IC:\\Users\\panfr\\Documents\\vcpkg\\installed\\x64-windows\\include -external:IC:\\Users\\panfr\\Documents\\vcpkg\\installed\\x64-windows\\include\\AL -external:W0 /DWIN32 /D_WINDOWS /GR /EHsc /Zi /Ob0 /Od /RTC1 -std:c++latest -MDd /FoCMakeFiles\\OpenGLProject.dir\\src\\main\\main.cpp.obj /FdCMakeFiles\\OpenGLProject.dir\\ /FS -c C:\\Users\\panfr\\OneDrive\\VSCode\\C++\\OpenGL\\src\\main\\main.cpp",
+  "file": "C:\\Users\\panfr\\OneDrive\\VSCode\\C++\\OpenGL\\src\\main\\main.cpp",
+  "output": "CMakeFiles\\OpenGLProject.dir\\src\\main\\main.cpp.obj"
+}
+]
