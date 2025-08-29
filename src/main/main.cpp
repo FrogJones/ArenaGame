@@ -258,6 +258,13 @@ void setupAudio(ALCdevice* &device, ALCcontext* &context) {
 }
 // ====================== MAIN FUNCTION ======================
 int main() {
+
+    ALCdevice* device = nullptr;
+
+    if (!alcIsExtensionPresent(device, "ALC_EXT_EFX")) {
+    std::cerr << "EFX not supported!\n";    
+    }
+
     // Initialize GLFW and create window
     GLFWwindow* window = initializeGLFW();
     if (!window) return -1;
@@ -279,19 +286,19 @@ int main() {
     Shader levelShader("shaders/levelVs.glsl", "shaders/levelFs.glsl");
     Shader torchShader("shaders/torchVs.glsl", "shaders/torchFs.glsl");
     Shader swordShader("shaders/swordVs.glsl", "shaders/swordFs.glsl");
-
+    
     // Load level model
     Model level("models/level/level.obj");
     Model torch("models/torch/torch.obj");
     Model sword("models/sword/sword.obj");
-
+    
     // audio setup
     AudioManager audio;
     if (!audio.init()) {
         std::cerr << "Failed to initialize AudioManager\n";
         return -1;
     }
-
+    
     vector<ALuint> steps;
     for (int i = 1; i < 4; i++) {
         std::string filename = "sfx/steps/step" + std::to_string(i) + ".wav";
@@ -301,13 +308,21 @@ int main() {
         }
     }
 
+    ALuint ambianceBuffer = audio.loadAudio("sfx/env/ambiance.wav");
+    if (ambianceBuffer != 0) {
+        ALuint ambianceSrc = audio.playSound(ambianceBuffer, true); // 'true' enables looping
+        alSourcef(ambianceSrc, AL_GAIN, 0.2f); // Lower volume for ambiance
+    }
+
+
+
     glm::vec3 lastCameraPos = camera.Position;
     float stepCooldown = 0.0f;
     float bobTimer = 0.0f;
     float bobAmount = 0.05f;
     float bobSpeed = 10.0f;
-
-
+    
+    
     // ====================== RENDER LOOP ======================
     while (!glfwWindowShouldClose(window)) {
         
@@ -316,10 +331,10 @@ int main() {
         
         // Process input
         processInput(window);
-
+        
         // Calculate movement distance
         float moveDistance = glm::length(camera.Position - lastCameraPos);
-
+        
         // IMPORTANT: Store the base camera position before applying bob
         glm::vec3 baseCameraPos = camera.Position;
         baseCameraPos.y = 1.0f; // Fixed height
@@ -332,15 +347,25 @@ int main() {
         
         // Update camera position with boundaries applied
         camera.Position = baseCameraPos;
-
+        
         // Threshold to avoid playing sound for very tiny movements
         if (moveDistance > 0.01f && stepCooldown <= 0.0f) {
             // Pick a random step sound
             int idx = rand() % steps.size();
-            audio.playSound(steps[idx]);
-
-            stepCooldown = 0.6f; // 0.6 seconds between steps, tweak for walking speed
+            
+            // Apply echo effect to footsteps for that dungeon feel
+            ALuint stepSource = audio.playSoundWithEffect(steps[idx], "echo");
+            
+            // Optional: Vary volume and pitch slightly for more realistic steps
+            float volumeVariation = 0.8f + (rand() % 40) / 100.0f; // 0.8 to 1.2
+            float pitchVariation = 0.9f + (rand() % 20) / 100.0f;  // 0.9 to 1.1
+            
+            alSourcef(stepSource, AL_GAIN, volumeVariation * 0.6f);
+            alSourcef(stepSource, AL_PITCH, pitchVariation);
+            
+            stepCooldown = 0.6f;
         }
+        
 
         // Calculate bob only if moving
         float bobOffset = 0.0f;
