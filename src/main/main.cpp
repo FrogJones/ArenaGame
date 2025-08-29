@@ -63,7 +63,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 
     float aspect = (float)width / (float)height;
-    projection = glm::perspective(glm::radians(camera.Zoom), aspect, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(camera.Zoom), aspect, 0.01f, 20.0f);
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
@@ -102,7 +102,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
@@ -129,7 +128,6 @@ void processInput(GLFWwindow* window) {
     // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     //     camera.ProcessKeyboard(DOWN, deltaTime);
 }
-
 // ====================== INITIALIZATION FUNCTIONS ======================
 GLFWwindow* initializeGLFW() {
     // Initialize GLFW
@@ -175,49 +173,48 @@ void updateTiming() {
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 }
-
 // ====================== LIGHTING SETUP FUNCTION ======================
 void setupLighting(Shader& shader, float time) {
     shader.use();
-    
+
     // Set view position
     shader.setVec3("viewPos", camera.Position);
-    
+
     // Directional light (minimal - just basic fill light)
     shader.setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
-    shader.setVec3("dirLight.ambient", 0.005f, 0.005f, 0.01f);  // Extremely minimal ambient
-    shader.setVec3("dirLight.diffuse", 0.05f, 0.05f, 0.08f);   // Very weak directional light
-    shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);     // No specular
-    
-    // Point lights - now using all 8 torch positions
-    // Note: You'll need to update your fragment shader to #define NR_POINT_LIGHTS 8
+    shader.setVec3("dirLight.ambient", 0.005f, 0.005f, 0.01f);
+    shader.setVec3("dirLight.diffuse", 0.05f, 0.05f, 0.08f);
+    shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
+
+    // Point lights with flicker
     for (int i = 0; i < 8; i++) {
         std::string number = std::to_string(i);
-        
-        // Use all 8 torch positions
         glm::vec3 lightPos = pointLightPositions[i];
-
         shader.setVec3("pointLights[" + number + "].position", lightPos);
-        
-        shader.setVec3("pointLights[" + number + "].ambient", 0.02f, 0.015f, 0.005f); 
-        shader.setVec3("pointLights[" + number + "].diffuse", 1.2f, 0.6f, 0.15f); // Slightly reduced since more lights
-        shader.setVec3("pointLights[" + number + "].specular", 0.1f, 0.1f, 0.05f);
-        
-        // Slightly smaller range since we have more lights
-        shader.setFloat("pointLights[" + number + "].constant", 1.0f);
-        shader.setFloat("pointLights[" + number + "].linear", 0.25f);      
-        shader.setFloat("pointLights[" + number + "].quadratic", 0.25f);   
-    }
-    
-    // Material properties (these will be overridden by the model's materials)
-    shader.setFloat("material.shininess", 4.0f); // Low shininess for PS1 look
-    
-    // PS1-style fog settings
-    shader.setFloat("fogNear", 4.0f);           // Fog starts at distance 5
-    shader.setFloat("fogFar", 10.0f);           // Complete fog at distance 25
-    shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f); // Dark blue/purple fog
-}
 
+        shader.setVec3("pointLights[" + number + "].ambient", 0.02f, 0.015f, 0.005f);
+
+        // Base torch color
+        glm::vec3 baseDiffuse(1.2f, 0.6f, 0.15f);
+
+        // Flicker factor (each torch flickers slightly differently using offset)
+        float flicker = 0.85f + 0.15f * sin(time * 7.0f + i * 1.3f) 
+                              * cos(time * 5.0f + i * 2.1f);
+
+        shader.setVec3("pointLights[" + number + "].diffuse", baseDiffuse * flicker);
+        shader.setVec3("pointLights[" + number + "].specular", 0.1f, 0.1f, 0.05f);
+
+        shader.setFloat("pointLights[" + number + "].constant", 1.0f);
+        shader.setFloat("pointLights[" + number + "].linear", 0.25f);
+        shader.setFloat("pointLights[" + number + "].quadratic", 0.25f);
+    }
+
+    shader.setFloat("material.shininess", 4.0f);
+
+    shader.setFloat("fogNear", 4.0f);
+    shader.setFloat("fogFar", 7.0f);
+    shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f);
+}
 // ====================== TORCH LIGHTING SETUP FUNCTION ======================
 void setupTorchLighting(Shader& shader, float time) {
     shader.use();
@@ -238,10 +235,9 @@ void setupTorchLighting(Shader& shader, float time) {
     
     // Same fog settings as main scene
     shader.setFloat("fogNear", 4.0f);
-    shader.setFloat("fogFar", 10.0f);
+    shader.setFloat("fogFar", 7.0f);
     shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f);
 }
-
 //===================== AUDIO SETUP FUNCTION ======================
 void setupAudio(ALCdevice* &device, ALCcontext* &context) {
     device = alcOpenDevice(nullptr); // Open default device
@@ -260,8 +256,6 @@ void setupAudio(ALCdevice* &device, ALCcontext* &context) {
 
     std::cout << "OpenAL device initialized successfully!\n";
 }
-
-
 // ====================== MAIN FUNCTION ======================
 int main() {
     // Initialize GLFW and create window
@@ -284,10 +278,12 @@ int main() {
     // Build and compile shader program
     Shader levelShader("shaders/levelVs.glsl", "shaders/levelFs.glsl");
     Shader torchShader("shaders/torchVs.glsl", "shaders/torchFs.glsl");
+    Shader swordShader("shaders/swordVs.glsl", "shaders/swordFs.glsl");
 
     // Load level model
     Model level("models/level/level.obj");
     Model torch("models/torch/torch.obj");
+    Model sword("models/sword/sword.obj");
 
     // audio setup
     AudioManager audio;
@@ -315,9 +311,27 @@ int main() {
     // ====================== RENDER LOOP ======================
     while (!glfwWindowShouldClose(window)) {
         
+        // Update timing first
+        updateTiming();
+        
+        // Process input
+        processInput(window);
 
         // Calculate movement distance
         float moveDistance = glm::length(camera.Position - lastCameraPos);
+
+        // IMPORTANT: Store the base camera position before applying bob
+        glm::vec3 baseCameraPos = camera.Position;
+        baseCameraPos.y = 1.0f; // Fixed height
+        
+        // Apply movement boundaries BEFORE bobbing
+        if (baseCameraPos.x > 2.8f) baseCameraPos.x = 2.8f;
+        if (baseCameraPos.x < -2.8f) baseCameraPos.x = -2.8f;
+        if (baseCameraPos.z > 2.8f) baseCameraPos.z = 2.8f;
+        if (baseCameraPos.z < -2.8f) baseCameraPos.z = -2.8f;
+        
+        // Update camera position with boundaries applied
+        camera.Position = baseCameraPos;
 
         // Threshold to avoid playing sound for very tiny movements
         if (moveDistance > 0.01f && stepCooldown <= 0.0f) {
@@ -325,50 +339,45 @@ int main() {
             int idx = rand() % steps.size();
             audio.playSound(steps[idx]);
 
-            stepCooldown = 0.6f; // 0.3 seconds between steps, tweak for walking speed
+            stepCooldown = 0.6f; // 0.6 seconds between steps, tweak for walking speed
         }
 
         // Calculate bob only if moving
+        float bobOffset = 0.0f;
         if (moveDistance > 0.01f) {
             bobTimer += deltaTime * bobSpeed;
-
-            float bobOffset = sin(bobTimer) * bobAmount;
-            camera.Position.y = 1.0f + bobOffset; // base height + bob
+            bobOffset = sin(bobTimer) * bobAmount;
         } else {
-            // Reset camera height when standing still
+            // Gradually reset bob timer when standing still
             bobTimer = 0.0f;
-            camera.Position.y = 1.0f;
         }
-
+        
+        // Apply bob to camera position
+        camera.Position.y = 1.0f + bobOffset;
 
         // Update cooldown timer
         stepCooldown -= deltaTime;
 
-        // Update last position for next frame
-        lastCameraPos = camera.Position;
+        // Update last position for next frame (use the base position without bob)
+        lastCameraPos = baseCameraPos;
         
-        // Update timing
-        updateTiming();
-        
-        // Process input
-        processInput(window);
-
         // Clear buffers with a very dark PS1-style background
         glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Set up lighting (with time for animations)
-        setupLighting(levelShader, static_cast<float>(glfwGetTime()));
-
-        // Set up matrices
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
-        
+        // Calculate view matrix AFTER all camera position updates
         glm::mat4 view = camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(camera.Zoom), 
                                                 (float)SCR_WIDTH / (float)SCR_HEIGHT, 
                                                 0.1f, 100.0f);
+
+        // Set up lighting (with time for animations)
+        setupLighting(levelShader, static_cast<float>(glfwGetTime()));
+
+        // Set up matrices for level
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
         
         levelShader.setMat4("model", model);
         levelShader.setMat4("view", view);
@@ -377,6 +386,7 @@ int main() {
         // Render the level
         level.Draw(levelShader);
 
+        // Render torches
         setupTorchLighting(torchShader, static_cast<float>(glfwGetTime()));
 
         for (int i = 0; i < 8; i++) {
@@ -398,18 +408,46 @@ int main() {
             torch.Draw(torchShader);
         }
 
-        camera.Position.y = 1.0f; // Keep camera at a fixed height for a ground-level view
+        // RENDER SWORD: Setup lighting for sword shader
+        setupLighting(swordShader, static_cast<float>(glfwGetTime()));
+        glClear(GL_DEPTH_BUFFER_BIT);
 
-        if (camera.Position.x > 2.8f) camera.Position.x = 2.8f;
-        if (camera.Position.x < -2.8f) camera.Position.x = -2.8f;
-        if (camera.Position.z > 2.8f) camera.Position.z = 2.8f;
-        if (camera.Position.z < -2.8f) camera.Position.z = -2.8f;
+        glm::mat4 swordModel = glm::mat4(1.0f);
+        // Position sword relative to camera with fixed offsets (like it's attached to the viewport)
+        glm::vec3 swordPos = camera.Position + 
+                            camera.Front * 0.6f +     // Fixed distance forward
+                            camera.Right * 0.6f -    // Fixed distance to the right  
+                            camera.Up * 0.25f;        // Fixed distance down
+        
+        // Apply only subtle bobbing effect
+        float swordBobOffset = sin(bobTimer) * (bobAmount * 0.2f); // 20% of camera bob
+        swordPos.y += swordBobOffset;
+        
+        swordModel = glm::translate(swordModel, swordPos);
+        
+        // Follow camera yaw rotation but keep pitch and roll static for stability
+        float cameraYaw = atan2(camera.Front.x, camera.Front.z);
+        float cameraPitch = asin(-camera.Front.y);
+        swordModel = glm::rotate(swordModel, cameraYaw, glm::vec3(0.0f, 1.0f, 0.0f));
+        float limitedPitch = glm::clamp(cameraPitch * 0.8f, glm::radians(-70.0f), glm::radians(70.0f));
+        swordModel = glm::rotate(swordModel, limitedPitch, glm::vec3(1.0f, 0.0f, 0.0f));
+        
+        // Apply fixed sword orientation relative to camera direction
+        swordModel = glm::rotate(swordModel, glm::radians(-15.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Slight downward tilt
+        swordModel = glm::rotate(swordModel, glm::radians(25.0f), glm::vec3(0.0f, 1.0f, 0.0f));  // Angle to the right
+        swordModel = glm::rotate(swordModel, glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));  // Slight roll
+        
+        swordShader.setMat4("model", swordModel);
+        swordShader.setMat4("view", view);
+        swordShader.setMat4("projection", projection);
+        
+        sword.Draw(swordShader);
+    
 
         // Swap buffers and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
     // glfw: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
     std::cout << "PS1-style level viewer completed successfully!\n";

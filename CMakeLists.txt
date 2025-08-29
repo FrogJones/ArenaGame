@@ -57,13 +57,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/src/textures"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/textures"
-    COMMENT "Copying textures folder to build output"
-)
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_SOURCE_DIR}/src/models"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/models"
     COMMENT "Copying models folder to build output"

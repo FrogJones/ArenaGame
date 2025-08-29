@@ -1,0 +1,23 @@
+# Ignore build folder(s)
+build/
+bin/
+out/
+
+# Ignore VSCode user-specific settings but keep useful config
+.vscode/
+
+# Or ignore all VSCode config (if you don't want to share any settings)
+# .vscode/
+
+# Ignore OS-specific files (optional)
+.DS_Store
+Thumbs.db
+
+# Ignore compiler generated files (optional)
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
