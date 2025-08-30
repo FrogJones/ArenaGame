@@ -20,9 +20,15 @@ find_package(assimp CONFIG REQUIRED)
 find_package(OpenAL CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
 
-# Your source files
+# Your source files - now including all the new .cpp files
 set(SOURCES
     src/main/main.cpp
+    src/main/gameEngine.cpp
+    src/main/gameState.cpp
+    src/main/inputHandler.cpp
+    src/main/renderer.cpp
+    src/main/config.cpp
+    src/main/model.cpp
 )
 
 # Create executable
@@ -81,8 +87,8 @@ add_custom_target(dist
     COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/glfw3.dll" "${CMAKE_BINARY_DIR}/dist/" || echo "glfw3.dll not found"
     # Copy asset folders
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/src/shaders" "${CMAKE_BINARY_DIR}/dist/shaders"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/src/textures" "${CMAKE_BINARY_DIR}/dist/textures"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/src/models" "${CMAKE_BINARY_DIR}/dist/models"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/src/sfx" "${CMAKE_BINARY_DIR}/dist/sfx"
     COMMENT "Creating distribution folder with all assets"
     DEPENDS ${PROJECT_NAME}
 )
