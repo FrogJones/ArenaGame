@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.15)
 
 # Force vcpkg toolchain if not already set
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "C:/Users/panfr/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "Vcpkg toolchain file")
+set(CMAKE_TOOLCHAIN_FILE "C:/Users/panfr/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake"
+CACHE STRING "Vcpkg toolchain file")
 endif()
 
-project(OpenGLProject LANGUAGES C CXX)
+project(PS1Graphics LANGUAGES C CXX)
 
 # Use C++23
 set(CMAKE_CXX_STANDARD 23)
@@ -22,27 +22,34 @@ find_package(SndFile CONFIG REQUIRED)
 
 # Your source files - now including all the new .cpp files
 set(SOURCES
-    src/main/main.cpp
-    src/main/gameEngine.cpp
-    src/main/gameState.cpp
-    src/main/inputHandler.cpp
-    src/main/renderer.cpp
-    src/main/config.cpp
-    src/main/model.cpp
+src/main/main.cpp
+src/main/gameEngine.cpp
+src/main/gameState.cpp
+src/main/inputHandler.cpp
+src/main/renderer.cpp
+src/main/config.cpp
+src/main/model.cpp
 )
 
 # Create executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+# Hide console and use static runtime
+if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
+    )
+endif()
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        glad::glad 
-        glfw
-        glm::glm
-        assimp::assimp
-        OpenAL::OpenAL
-        SndFile::sndfile
+PRIVATE
+glad::glad 
+glfw
+glm::glm
+assimp::assimp
+OpenAL::OpenAL
+SndFile::sndfile
 )
 
 # Include directories
