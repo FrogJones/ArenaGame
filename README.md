@@ -2,7 +2,7 @@
 
 A retro PlayStation 1-inspired 3D level viewer built with C++, OpenGL, and OpenAL. Experience authentic low-poly environments with pixelated textures, atmospheric torch lighting, and immersive footstep audio that captures the nostalgic feel of classic 90s gaming.
 
-![PS1 Level Viewer Screenshot](docs/images/screenshot-main.png)
+![PS1 Level Viewer Screenshot](docs/images/screenshot.png)
 *Main level view showcasing the retro PS1 aesthetic*
 
 ## ✨ Features
@@ -46,7 +46,7 @@ A retro PlayStation 1-inspired 3D level viewer built with C++, OpenGL, and OpenA
 
 ### Rendering Pipeline
 
-![Rendering Pipeline](docs/images/rendering-pipeline.png)
+![Rendering Pipeline](docs/images/pipeline.png)
 *OpenGL rendering pipeline flow*
 
 The rendering system implements several key PS1-era techniques:
@@ -66,7 +66,7 @@ The audio implementation focuses on performance and authenticity:
 
 ### Camera and Movement System
 
-![Camera System](docs/images/camera-system.png)
+![Camera System](docs/gifs/camera.gif)
 *Camera movement and collision detection*
 
 ## 🛣️ Development Roadmap
@@ -116,3 +116,4 @@ of this software and associated documentation files...
 [⭐ Star this project](https://github.com/FrogJones/ArenaGame) • [🐛 Report Bug](https://github.com/yourusername/ps1-level-viewer/issues)
 
 </div>
+
