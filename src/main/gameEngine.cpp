@@ -10,6 +10,7 @@ GameEngine::GameEngine()
       inputHandler(nullptr),
       renderer(nullptr),
       audioManager(nullptr),
+      gui(nullptr),
       ambianceBuffer(0),
       ambianceSource(0)
 {
@@ -69,6 +70,12 @@ bool GameEngine::initialize() {
         return false;
     }
 
+    gui = new GUI();
+    if (!gui->Initialize(window)) {
+        std::cerr << "Failed to initialize GUI" << std::endl;
+        return false;
+    };
+
     std::cout << "Game engine initialized successfully!" << std::endl;
     return true;
 }
@@ -83,12 +90,17 @@ void GameEngine::run() {
         
         // Update camera movement and boundaries
         gameState.updateMovement();
+
+        gameState.updateInteraction(window);
         
         // Handle movement-based audio
         handleMovementAudio();
         
         // Render frame
         renderer->render();
+
+        gui->NewFrame();
+        gui->Render(&gameState);
 
         // Swap buffers and poll events
         glfwSwapBuffers(window);
@@ -97,12 +109,19 @@ void GameEngine::run() {
 }
 
 void GameEngine::cleanup() {
+    
+    if (gui) {
+        gui->Shutdown();
+        delete gui;
+        gui = nullptr;
+    }
+    
     delete inputHandler;
     delete renderer;
     delete audioManager;
-    
+ 
     if (window) {
-        glfwTerminate();
+        glfwTerminate();  
     }
 }
 

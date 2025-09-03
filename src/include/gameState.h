@@ -3,6 +3,9 @@
 
 #include <glm/glm.hpp>
 #include <camera.h>
+#include <string>
+#include <GLFW/glfw3.h>
+#include "interactionSystem.h"
 
 class GameState {
 public:
@@ -26,10 +29,18 @@ public:
     
     // Projection matrix
     glm::mat4 projection;
+
+    // Interaction
+    bool showInteractionPrompt = false;
+    std::string interactionText = "";
+
+    InteractionSystem interactionSystem;
     
     GameState();
     void updateTiming();
     void updateMovement();
+
+    void updateInteraction(GLFWwindow* window);
 };
 
 #endif

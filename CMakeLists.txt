@@ -19,6 +19,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(OpenAL CONFIG REQUIRED)
 find_package(SndFile CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 
 # Your source files - now including all the new .cpp files
 set(SOURCES
@@ -29,6 +30,9 @@ src/main/inputHandler.cpp
 src/main/renderer.cpp
 src/main/config.cpp
 src/main/model.cpp
+src/main/GUI.cpp
+src/main/interactionSystem.cpp
+
 )
 
 # Create executable
@@ -50,6 +54,7 @@ glm::glm
 assimp::assimp
 OpenAL::OpenAL
 SndFile::sndfile
+imgui::imgui
 )
 
 # Include directories
@@ -81,6 +86,14 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/sfx"
     COMMENT "Copying sfx folder to build output"
 )
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/src/fonts"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/fonts"
+    COMMENT "Copying fonts folder to build output"
+)
+
 
 # ==================================================
 # Distribution Target (optional packaging step)

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "gameEngine.h"
+#include "GUI.h"
 
 int main() {
     GameEngine engine;

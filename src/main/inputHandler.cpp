@@ -85,12 +85,13 @@ void InputHandler::processInput(GLFWwindow* window) {
         gameState->camera.ProcessKeyboard(LEFT, gameState->deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         gameState->camera.ProcessKeyboard(RIGHT, gameState->deltaTime);
-    
-    // Uncomment these if you want vertical movement
-    // if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    //     gameState->camera.ProcessKeyboard(UP, gameState->deltaTime);
-    // if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-    //     gameState->camera.ProcessKeyboard(DOWN, gameState->deltaTime);
+    bool ePressed = false;    
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+        if(!ePressed && gameState->showInteractionPrompt) {
+            ePressed = true;
+            
+        }
+    }
 }
 
 void InputHandler::setupCallbacks(GLFWwindow* window) {

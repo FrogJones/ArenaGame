@@ -10,28 +10,30 @@
 Renderer::Renderer(GameState* state) 
     : gameState(state), 
       levelShader(nullptr), 
-      torchShader(nullptr), 
       swordShader(nullptr),
       level(nullptr), 
-      torch(nullptr), 
+      bonfire(nullptr),
+      bonfireSword(nullptr),
       sword(nullptr) 
 {
 }
 
+  
 Renderer::~Renderer() {
     delete levelShader;
-    delete torchShader;
     delete swordShader;
+    delete bonfireShader;
     delete level;
-    delete torch;
+    delete bonfireSword;
+    delete bonfire;
     delete sword;
 }
 
 bool Renderer::initializeShaders() {
     try {
-        levelShader = new Shader("shaders/levelVs.glsl", "shaders/levelFs.glsl");
-        torchShader = new Shader("shaders/torchVs.glsl", "shaders/torchFs.glsl");
-        swordShader = new Shader("shaders/swordVs.glsl", "shaders/swordFs.glsl");
+        levelShader = new Shader("shaders/level/levelVs.glsl", "shaders/level/levelFs.glsl");
+        swordShader = new Shader("shaders/sword/swordVs.glsl", "shaders/sword/swordFs.glsl");
+        bonfireShader = new Shader("shaders/bonfire/bonfireVs.glsl", "shaders/bonfire/bonfireFs.glsl");
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to initialize shaders: " << e.what() << std::endl;
@@ -42,8 +44,9 @@ bool Renderer::initializeShaders() {
 bool Renderer::loadModels() {
     try {
         level = new Model("models/level/level.obj");
-        torch = new Model("models/torch/torch.obj");
         sword = new Model("models/sword/sword.obj");
+        bonfireSword = new Model("models/bonfireSword/bonfire.obj");
+        bonfire = new Model("models/bonfire/bonfire.obj");
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to load models: " << e.what() << std::endl;
@@ -136,33 +139,24 @@ void Renderer::renderLevel() {
     level->Draw(*levelShader);
 }
 
-void Renderer::renderTorches() {
-    if (!torchShader || !torch) return;
-    
-    setupTorchLighting(*torchShader, static_cast<float>(glfwGetTime()));
+void Renderer::renderBonfire() {
+    if (!bonfireShader || !bonfire || !bonfireSword) {
+        std::cout << "Bonfire or bonfire sword model/shader not loaded!" << std::endl;
+        return;
+    };
+
+    setupTorchLighting(*bonfireShader, static_cast<float>(glfwGetTime()));
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     
     glm::mat4 view = gameState->camera.GetViewMatrix();
 
-    for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
-        glm::mat4 torchModel = glm::mat4(1.0f);
-        torchModel = glm::translate(torchModel, POINT_LIGHT_POSITIONS[i]);
-        torchModel = glm::scale(torchModel, glm::vec3(1.0f, 1.0f, 1.0f));
-        
-        // Apply rotations based on position
-        if (POINT_LIGHT_POSITIONS[i].z < -1.0f) {
-            torchModel = glm::rotate(torchModel, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        } else if (POINT_LIGHT_POSITIONS[i].z > 1.0f) {
-            torchModel = glm::rotate(torchModel, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        } else if (POINT_LIGHT_POSITIONS[i].x < -1.0f) {
-            torchModel = glm::rotate(torchModel, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
-        
-        torchShader->setMat4("model", torchModel);
-        torchShader->setMat4("view", view);
-        torchShader->setMat4("projection", gameState->projection);
-        
-        torch->Draw(*torchShader);
-    }
+    bonfireShader->setMat4("model", model);
+    bonfireShader->setMat4("view", view);
+    bonfireShader->setMat4("projection", gameState->projection);
+
+    bonfireSword->Draw(*bonfireShader);
 }
 
 void Renderer::renderSword() {
@@ -222,6 +216,6 @@ void Renderer::render() {
 
     // Render all objects
     renderLevel();
-    renderTorches();
+    renderBonfire();
     renderSword();
 }

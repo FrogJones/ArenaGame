@@ -11,6 +11,8 @@
 #include "gameState.h"
 #include "inputHandler.h"
 #include "renderer.h"
+#include "GUI.h"
+#include "interactionSystem.h"
 
 class GameEngine {
 private:
@@ -19,6 +21,7 @@ private:
     InputHandler* inputHandler;
     Renderer* renderer;
     AudioManager* audioManager;
+    GUI* gui;
     
     // Audio
     std::vector<ALuint> stepSounds;

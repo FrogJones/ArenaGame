@@ -21,6 +21,8 @@ GameState::GameState()
     // Initialize projection matrix
     float aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
     projection = glm::perspective(glm::radians(camera.Zoom), aspect, 0.01f, 20.0f);
+
+    interactionSystem.initialize();
 }
 
 void GameState::updateTiming() {
@@ -65,5 +67,30 @@ void GameState::updateMovement() {
     // Update step cooldown
     if (stepCooldown > 0.0f) {
         stepCooldown -= deltaTime;
+    }
+}
+
+void GameState::updateInteraction(GLFWwindow* window) {
+    // Reset prompt state
+    showInteractionPrompt = false;
+    interactionText.clear();
+
+    // Check all interactables and set prompt text if close enough
+    bool near = interactionSystem.CheckInteractions(camera.Position, interactionText);
+    showInteractionPrompt = near;
+
+    // If near and E pressed, trigger interaction (debounced)
+    if (near) {
+        int state = glfwGetKey(window, GLFW_KEY_E);
+        if (state == GLFW_PRESS && !awaitingRelock) {
+            interactionSystem.HandleInteraction(camera.Position);
+            awaitingRelock = true;
+        } else if (state == GLFW_RELEASE) {
+            // allow next press
+            awaitingRelock = false;
+        }
+    } else {
+        // ensure button state resets when away
+        awaitingRelock = false;
     }
 }

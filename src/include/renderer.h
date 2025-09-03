@@ -11,12 +11,13 @@ class Renderer {
 private:
     // Shaders
     Shader* levelShader;
-    Shader* torchShader;
+    Shader* bonfireShader;
     Shader* swordShader;
     
     // Models
     Model* level;
-    Model* torch;
+    Model* bonfireSword;
+    Model* bonfire;
     Model* sword;
     
     GameState* gameState;
@@ -32,8 +33,8 @@ public:
     void setupTorchLighting(Shader& shader, float time);
     
     void renderLevel();
-    void renderTorches();
     void renderSword();
+    void renderBonfire();
     void render();
 };
 
