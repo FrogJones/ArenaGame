@@ -21,6 +21,7 @@ public:
     bool firstMouse;
     bool cursorLocked;
     bool awaitingRelock;
+    bool eKeyPressed;
     
     // Movement and effects
     glm::vec3 lastCameraPos;

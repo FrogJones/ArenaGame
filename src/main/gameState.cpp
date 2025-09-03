@@ -13,6 +13,7 @@ GameState::GameState()
       firstMouse(true),
       cursorLocked(true),
       awaitingRelock(false),
+      eKeyPressed(false),
       lastCameraPos(camera.Position),
       stepCooldown(0.0f),
       bobTimer(0.0f),
@@ -82,9 +83,9 @@ void GameState::updateInteraction(GLFWwindow* window) {
     // If near and E pressed, trigger interaction (debounced)
     if (near) {
         int state = glfwGetKey(window, GLFW_KEY_E);
-        if (state == GLFW_PRESS && !awaitingRelock) {
+        if (state == GLFW_PRESS && !eKeyPressed) {
             bool interacted = interactionSystem.HandleInteraction(camera.Position);
-            awaitingRelock = true;
+            eKeyPressed = true;
 
             if (interacted) {
                 // consume the prompt immediately and clear text so it won't reappear
@@ -93,10 +94,10 @@ void GameState::updateInteraction(GLFWwindow* window) {
             }
         } else if (state == GLFW_RELEASE) {
             // allow next press
-            awaitingRelock = false;
+            eKeyPressed = false;
         }
     } else {
         // ensure button state resets when away
-        awaitingRelock = false;
+        eKeyPressed = false;
     }
 }

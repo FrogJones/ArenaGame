@@ -85,13 +85,6 @@ void InputHandler::processInput(GLFWwindow* window) {
         gameState->camera.ProcessKeyboard(LEFT, gameState->deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         gameState->camera.ProcessKeyboard(RIGHT, gameState->deltaTime);
-    bool ePressed = false;    
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        if(!ePressed && gameState->showInteractionPrompt) {
-            ePressed = true;
-            
-        }
-    }
 }
 
 void InputHandler::setupCallbacks(GLFWwindow* window) {
