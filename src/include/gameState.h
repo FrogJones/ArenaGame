@@ -34,6 +34,10 @@ public:
     bool showInteractionPrompt = false;
     std::string interactionText = "";
 
+    // New: sword/bonfire state exposed to other systems
+    bool hasBrokenSword = false;
+    std::string swordType; // e.g. "broken" or "" for none
+
     InteractionSystem interactionSystem;
     
     GameState();

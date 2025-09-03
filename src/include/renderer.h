@@ -19,6 +19,7 @@ private:
     Model* bonfireSword;
     Model* bonfire;
     Model* sword;
+    Model* brokenSword;
     
     GameState* gameState;
     
@@ -33,8 +34,8 @@ public:
     void setupTorchLighting(Shader& shader, float time);
     
     void renderLevel();
-    void renderSword();
-    void renderBonfire();
+    void renderSword(string type);
+    void renderBonfire(bool hasBrokenSword);
     void render();
 };
 

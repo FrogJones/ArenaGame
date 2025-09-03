@@ -83,8 +83,14 @@ void GameState::updateInteraction(GLFWwindow* window) {
     if (near) {
         int state = glfwGetKey(window, GLFW_KEY_E);
         if (state == GLFW_PRESS && !awaitingRelock) {
-            interactionSystem.HandleInteraction(camera.Position);
+            bool interacted = interactionSystem.HandleInteraction(camera.Position);
             awaitingRelock = true;
+
+            if (interacted) {
+                // consume the prompt immediately and clear text so it won't reappear
+                showInteractionPrompt = false;
+                interactionText.clear();
+            }
         } else if (state == GLFW_RELEASE) {
             // allow next press
             awaitingRelock = false;

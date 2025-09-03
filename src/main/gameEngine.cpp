@@ -2,8 +2,11 @@
 #include "config.h"
 #include <iostream>
 #include <random>
+#include <cstdlib>
+#include <ctime>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <glm/glm.hpp>
 
 GameEngine::GameEngine() 
     : window(nullptr),
@@ -14,6 +17,8 @@ GameEngine::GameEngine()
       ambianceBuffer(0),
       ambianceSource(0)
 {
+    // seed RNG once
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
 }
 
 GameEngine::~GameEngine() {
@@ -76,6 +81,34 @@ bool GameEngine::initialize() {
         return false;
     };
 
+    // bonfire / sword world position (match the one used when creating the interactable)
+    glm::vec3 bonfirePos = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    // Try to attach the callback to the existing interactable at that position
+    bool ok = gameState.interactionSystem.SetCallbackForPosition(
+        bonfirePos,
+        [this]() {
+            // set game state flags that renderer reads
+            gameState.hasBrokenSword = true;
+            gameState.swordType = "broken";
+            std::cout << "Interaction: broken sword picked up, flags set.\n";
+        },
+        0.3f // tolerance in world units for matching position
+    );
+
+    if (!ok) {
+        // fallback: create a new interactable at same pos with the desired callback
+        gameState.interactionSystem.AddInteractable(
+            bonfirePos,
+            "E - Take Sword",
+            [this]() {
+                gameState.hasBrokenSword = true;
+                gameState.swordType = "broken";
+                std::cout << "Interaction (fallback): broken sword picked up, flags set.\n";
+            }
+        );
+    }
+
     std::cout << "Game engine initialized successfully!" << std::endl;
     return true;
 }
@@ -91,6 +124,7 @@ void GameEngine::run() {
         // Update camera movement and boundaries
         gameState.updateMovement();
 
+        // Update interactions (sets showInteractionPrompt / interactionText)
         gameState.updateInteraction(window);
         
         // Handle movement-based audio
@@ -109,19 +143,30 @@ void GameEngine::run() {
 }
 
 void GameEngine::cleanup() {
-    
     if (gui) {
         gui->Shutdown();
         delete gui;
         gui = nullptr;
     }
-    
-    delete inputHandler;
-    delete renderer;
-    delete audioManager;
+
+    if (inputHandler) {
+        delete inputHandler;
+        inputHandler = nullptr;
+    }
+
+    if (renderer) {
+        delete renderer;
+        renderer = nullptr;
+    }
+
+    if (audioManager) {
+        delete audioManager;
+        audioManager = nullptr;
+    }
  
     if (window) {
         glfwTerminate();  
+        window = nullptr;
     }
 }
 
@@ -186,7 +231,15 @@ bool GameEngine::loadAudioAssets() {
     ambianceBuffer = audioManager->loadAudio("sfx/env/ambiance.wav");
     if (ambianceBuffer != 0) {
         ambianceSource = audioManager->playSound(ambianceBuffer, true); // 'true' enables looping
-        alSourcef(ambianceSource, AL_GAIN, 0.2f); // Lower volume for ambiance
+        if (ambianceSource != 0) {
+            alSourcef(ambianceSource, AL_GAIN, 0.2f); // Lower volume for ambiance
+            // make it non-positional so attenuation won't silence it unintentionally
+            alSourcei(ambianceSource, AL_SOURCE_RELATIVE, AL_TRUE);
+            // ensure listener defaults
+            alListenerf(AL_GAIN, 1.0f);
+        }
+    } else {
+        std::cerr << "Warning: failed to load ambiance.wav (buffer == 0)\n";
     }
 
     return true;
@@ -199,7 +252,7 @@ void GameEngine::handleMovementAudio() {
     // Threshold to avoid playing sound for very tiny movements
     if (moveDistance > MOVEMENT_THRESHOLD && gameState.stepCooldown <= 0.0f && !stepSounds.empty()) {
         // Pick a random step sound
-        int idx = rand() % stepSounds.size();
+        int idx = std::rand() % static_cast<int>(stepSounds.size());
         audioManager->playSound(stepSounds[idx]);
         
         gameState.stepCooldown = STEP_COOLDOWN; // Reset cooldown

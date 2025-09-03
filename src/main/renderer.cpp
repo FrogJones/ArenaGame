@@ -14,6 +14,7 @@ Renderer::Renderer(GameState* state)
       level(nullptr), 
       bonfire(nullptr),
       bonfireSword(nullptr),
+      brokenSword(nullptr),
       sword(nullptr) 
 {
 }
@@ -47,6 +48,7 @@ bool Renderer::loadModels() {
         sword = new Model("models/sword/sword.obj");
         bonfireSword = new Model("models/bonfireSword/bonfire.obj");
         bonfire = new Model("models/bonfire/bonfire.obj");
+        brokenSword = new Model("models/brokenSword/broken_sword.obj");
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to load models: " << e.what() << std::endl;
@@ -139,7 +141,7 @@ void Renderer::renderLevel() {
     level->Draw(*levelShader);
 }
 
-void Renderer::renderBonfire() {
+void Renderer::renderBonfire(bool flag) {
     if (!bonfireShader || !bonfire || !bonfireSword) {
         std::cout << "Bonfire or bonfire sword model/shader not loaded!" << std::endl;
         return;
@@ -156,10 +158,14 @@ void Renderer::renderBonfire() {
     bonfireShader->setMat4("view", view);
     bonfireShader->setMat4("projection", gameState->projection);
 
-    bonfireSword->Draw(*bonfireShader);
+    if (!flag){
+        bonfireSword->Draw(*bonfireShader);
+    } else {
+        bonfire->Draw(*bonfireShader);
+    }
 }
 
-void Renderer::renderSword() {
+void Renderer::renderSword(string type) {
     if (!swordShader || !sword) return;
     
     setupLighting(*swordShader, static_cast<float>(glfwGetTime()));
@@ -199,7 +205,12 @@ void Renderer::renderSword() {
     swordShader->setMat4("view", view);
     swordShader->setMat4("projection", gameState->projection);
     
-    sword->Draw(*swordShader);
+    if (type == "broken"){
+        brokenSword->Draw(*swordShader);
+    } else {
+        return;
+        //sword->Draw(*swordShader);
+    }
 }
 
 void Renderer::render() {
@@ -216,6 +227,6 @@ void Renderer::render() {
 
     // Render all objects
     renderLevel();
-    renderBonfire();
-    renderSword();
+    renderBonfire(gameState->hasBrokenSword);
+    renderSword(gameState->swordType);
 }
