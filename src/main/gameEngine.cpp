@@ -8,6 +8,7 @@
 
 #include "gameEngine.h"
 #include "config.h"
+#include "items.h"
 #include <iostream>
 #include <random>
 #include <cstdlib>
@@ -276,10 +277,14 @@ void GameEngine::setupGameInteractions() {
             // This lambda function is executed when the player interacts.
             gameState.hasBrokenSword = true;
             gameState.swordType = "broken";
+            
+            // Add the broken sword to inventory
+            Item brokenSword = Items::BrokenSword();
+            gameState.inventory.addItem(brokenSword);
+            
             if (swordPickupBuffer != 0) {
                 audioManager->playSound(swordPickupBuffer);
             }
-            // !!!! TO DO Add the broken sword to the player's inventory. !!!!
         }
     );
 

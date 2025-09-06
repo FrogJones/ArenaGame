@@ -23,6 +23,7 @@ public:
     bool cursorLocked;
     bool awaitingRelock;
     bool eKeyPressed;
+    bool tabKeyPressed;
     
     // Movement and effects
     glm::vec3 lastCameraPos;
@@ -37,6 +38,11 @@ public:
     std::string interactionText = "";
     std::string interactionPopup = "";
     float popupTimer = 0.0f;
+
+    // UI State
+    bool showMenu = false;
+    bool showInventory = false;
+    bool showCrosshair = true;
 
     // New: sword/bonfire state exposed to other systems
     bool hasBrokenSword = false;

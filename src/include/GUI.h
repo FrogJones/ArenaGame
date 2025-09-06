@@ -10,8 +10,7 @@
 
 class GUI {
 private:
-    bool showCrosshair = true;
-    bool showMenu = false;
+    // No more UI state flags - moved to GameState
     
 public:
     bool Initialize(GLFWwindow* window); 
@@ -19,11 +18,12 @@ public:
     void Render(GameState* gameState);                        
     void Shutdown();                      
     
-    void RenderCrosshair();
+    void RenderCrosshair(GameState* gameState);
     void RenderInteractionPrompt(GameState* gameState);
     void RenderPopup(GameState* gameState);
-    void RenderMenu();
-    void ToggleMenu();
+    void RenderMenu(GameState* gameState);
+    void RenderInventory(GameState* gameState);
+    void ToggleMenu(GameState* gameState);
     
-    bool IsMenuOpen() const { return showMenu; }
+    bool IsMenuOpen(GameState* gameState) const { return gameState->showMenu; }
 };

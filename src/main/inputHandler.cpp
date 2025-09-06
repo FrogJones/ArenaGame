@@ -125,6 +125,14 @@ void InputHandler::processInput(GLFWwindow* window) {
         gameState->awaitingRelock = true;
     }
 
+    // Handle Tab key for inventory toggle
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !gameState->tabKeyPressed) {
+        gameState->tabKeyPressed = true;
+        gameState->showInventory = !gameState->showInventory;
+    } else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
+        gameState->tabKeyPressed = false;
+    }
+
     // Handle camera movement via WASD keys.
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         gameState->camera.ProcessKeyboard(FORWARD, gameState->deltaTime);

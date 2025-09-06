@@ -79,3 +79,25 @@ void Inventory::removeItem(const std::string& itemName) {
         return item.getName() == itemName; 
     });
 }
+
+/**
+ * @brief Gets a pointer to an item by name.
+ * @param itemName The name of the item to find.
+ * @return A pointer to the item if found, nullptr otherwise.
+ */
+Item* Inventory::getItem(const std::string& itemName) {
+    for (auto& item : items) {
+        if (item.getName() == itemName) {
+            return &item;
+        }
+    }
+    return nullptr;
+}
+
+/**
+ * @brief Gets all items in the inventory.
+ * @return A const reference to the vector of items.
+ */
+std::vector<Item> Inventory::getItems() const {
+    return items;
+}

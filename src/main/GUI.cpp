@@ -53,8 +53,8 @@ void GUI::NewFrame() {
  *
  * Uses the foreground draw list to ensure it's rendered on top of all other UI elements.
  */
-void GUI::RenderCrosshair() {
-    if (!showCrosshair) return;
+void GUI::RenderCrosshair(GameState* gameState) {
+    if (!gameState->showCrosshair) return;
 
     // Calculate the center of the viewport.
     ImVec2 displaySize = ImGui::GetIO().DisplaySize;
@@ -74,13 +74,13 @@ void GUI::RenderCrosshair() {
 /**
  * @brief Renders the main game menu.
  */
-void GUI::RenderMenu() {
-    if (!showMenu) return;
+void GUI::RenderMenu(GameState* gameState) {
+    if (!gameState->showMenu) return;
     
     ImGui::Begin("Game Menu");
     
     if (ImGui::Button("Resume")) {
-        showMenu = false;
+        gameState->showMenu = false;
     }
     if (ImGui::Button("Options")) {
         // Placeholder for options logic.
@@ -89,6 +89,21 @@ void GUI::RenderMenu() {
         // Placeholder for quit logic.
     }
     
+    ImGui::End();
+}
+
+void GUI::RenderInventory(GameState* gameState) {
+    ImGui::Begin("Inventory");
+
+    const auto& items = gameState->inventory.getItems();
+    if (items.empty()) {
+        ImGui::Text("Inventory is empty.");
+    } else {
+        for (const auto& item : items) {
+            ImGui::BulletText("%s: %s", item.getName().c_str(), item.getDescription().c_str());
+        }
+    }
+
     ImGui::End();
 }
 
@@ -154,14 +169,17 @@ void GUI::RenderPopup(GameState* gameState) {
  * @param gameState The current game state, passed to components that need it.
  */
 void GUI::Render(GameState* gameState) {
-    if (showMenu) {
-        RenderMenu();
+    if (gameState->showMenu) {
+        RenderMenu(gameState);
     } else {
-        if (showCrosshair) {
-            RenderCrosshair();
+        if (gameState->showCrosshair) {
+            RenderCrosshair(gameState);
         }
         RenderInteractionPrompt(gameState);
         RenderPopup(gameState);
+    }
+    if (gameState->showInventory) {
+        RenderInventory(gameState);
     }
     
     // Finalize the ImGui frame and render its draw data.
@@ -172,8 +190,8 @@ void GUI::Render(GameState* gameState) {
 /**
  * @brief Toggles the visibility of the main menu.
  */
-void GUI::ToggleMenu() {
-    showMenu = !showMenu;
+void GUI::ToggleMenu(GameState* gameState) {
+    gameState->showMenu = !gameState->showMenu;
 }
 
 /**

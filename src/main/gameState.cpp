@@ -22,6 +22,7 @@ GameState::GameState()
       cursorLocked(true),
       awaitingRelock(false),
       eKeyPressed(false),
+      tabKeyPressed(false),
       lastCameraPos(camera.Position),
       stepCooldown(0.0f),
       bobTimer(0.0f),
