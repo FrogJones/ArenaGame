@@ -32,6 +32,7 @@ src/main/config.cpp
 src/main/model.cpp
 src/main/GUI.cpp
 src/main/interactionSystem.cpp
+src/main/inventory.cpp
 
 )
 

@@ -41,9 +41,10 @@ private:
     bool initializeGLAD();
     bool initializeAudio();
     bool loadAudioAssets();
+    void setupGameInteractions();
     
     void handleMovementAudio();
-    void updateCamera();
 };
+
 
 #endif

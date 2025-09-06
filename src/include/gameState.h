@@ -6,6 +6,7 @@
 #include <string>
 #include <GLFW/glfw3.h>
 #include "interactionSystem.h"
+#include "inventory.h"
 
 class GameState {
 public:
@@ -37,9 +38,11 @@ public:
 
     // New: sword/bonfire state exposed to other systems
     bool hasBrokenSword = false;
-    std::string swordType; // e.g. "broken" or "" for none
+    std::string swordType;
 
     InteractionSystem interactionSystem;
+
+    Inventory inventory;
     
     GameState();
     void updateTiming();

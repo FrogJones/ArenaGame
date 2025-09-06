@@ -7,8 +7,9 @@
 struct InteractableObject {
     glm::vec3 position;
     float radius = 1.0f;
-    std::string promptText = "E - Interact";
+    std::string promptText;
     std::function<void()> onInteract;
+    bool consumed = false; // To mark for removal
 };
 
 class InteractionSystem {
@@ -22,8 +23,6 @@ public:
 
     // Changed: return true if an interaction occurred (and object consumed/removed)
     bool HandleInteraction(const glm::vec3& playerPos);
-
-    bool SetCallbackForPosition(const glm::vec3& pos, std::function<void()> callback, float tol = 0.1f);
 
     // Optional helpers
     bool RemoveInteractable(const glm::vec3& pos, float tol = 0.1f);
