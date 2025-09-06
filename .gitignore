@@ -21,3 +21,5 @@ Thumbs.db
 *.so
 *.a
 *.lib
+
+imgui.ini
