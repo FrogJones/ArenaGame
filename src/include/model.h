@@ -19,11 +19,9 @@
 #include <map>
 #include <vector>
 
-using namespace std;
-
-inline unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false)
+inline unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false)
 {
-    string filename = string(path);
+    std::string filename = std::string(path);
     filename = directory + '/' + filename;
 
     unsigned int textureID;
@@ -65,23 +63,23 @@ class Model
 {
 public:
     // model data 
-    vector<Texture> textures_loaded;
-    vector<Mesh>    meshes;
-    string directory;
+    std::vector<Texture> textures_loaded;
+    std::vector<Mesh>    meshes;
+    std::string directory;
     bool gammaCorrection;
 
     // constructor
-    Model(string const &path, bool gamma = false);
+    Model(std::string const &path, bool gamma = false);
 
     // draws the model
     void Draw(Shader &shader);
     
 private:
     // helper functions
-    void loadModel(string const &path);
+    void loadModel(std::string const &path);
     void processNode(aiNode *node, const aiScene *scene);
     Mesh processMesh(aiMesh *mesh, const aiScene *scene);
-    vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
+    std::vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
 };
 
 #endif

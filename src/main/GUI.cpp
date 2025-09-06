@@ -93,18 +93,34 @@ void GUI::RenderMenu(GameState* gameState) {
 }
 
 void GUI::RenderInventory(GameState* gameState) {
-    ImGui::Begin("Inventory");
-
+    // Push custom colors
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.9f)); // Dark background
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.8f, 0.8f, 0.2f, 1.0f)); // Yellow border
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.8f, 1.0f)); // Light yellow text
+    
+    // Custom padding and rounding
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    
+    ImGui::Begin("Inventory", nullptr, 
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+    
     const auto& items = gameState->inventory.getItems();
     if (items.empty()) {
         ImGui::Text("Inventory is empty.");
     } else {
         for (const auto& item : items) {
-            ImGui::BulletText("%s: %s", item.getName().c_str(), item.getDescription().c_str());
+            ImGui::Text("%s:\n", item.getName().c_str());
+            ImGui::Text("%s", item.getDescription().c_str());
         }
     }
 
     ImGui::End();
+    
+    // Don't forget to pop the styles
+    ImGui::PopStyleVar(3);
+    ImGui::PopStyleColor(3);
 }
 
 /**
@@ -122,6 +138,7 @@ void GUI::RenderInteractionPrompt(GameState* gameState) {
     // Use a transparent, borderless window to act as a container for the text.
     ImGui::SetNextWindowPos(ImVec2(centerX, centerY), ImGuiCond_Always, ImVec2(0.5f, 0.5f)); // Centered pivot.
     ImGui::SetNextWindowBgAlpha(0.5f); // semi-transparent background.
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.8f, 1.0f)); // Light yellow text
     ImGui::Begin("InteractionPrompt", nullptr,
         ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoResize |
@@ -131,7 +148,8 @@ void GUI::RenderInteractionPrompt(GameState* gameState) {
 
     // Render the interaction text.
     ImGui::Text("%s", gameState->interactionText.c_str());
-   
+    ImGui::PopStyleColor(1);
+
     ImGui::End();
 }
 
@@ -149,6 +167,7 @@ void GUI::RenderPopup(GameState* gameState) {
     
     ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // Bottom-left pivot.
     ImGui::SetNextWindowBgAlpha(0.8f); // Semi-transparent background for visibility.
+    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.8f, 1.0f)); // Light yellow text
     ImGui::Begin("Popup", nullptr,
         ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoResize |
@@ -160,6 +179,7 @@ void GUI::RenderPopup(GameState* gameState) {
     // Scale the text to be larger for better visibility
     ImGui::SetWindowFontScale(1.5f); // 1.5x larger text
     ImGui::Text("%s", gameState->interactionPopup.c_str());
+    ImGui::PopStyleColor(1);
     
     ImGui::End();
 }

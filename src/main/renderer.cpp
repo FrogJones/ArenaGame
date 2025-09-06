@@ -29,7 +29,8 @@ Renderer::Renderer(GameState* state)
       bonfire(nullptr),
       bonfireSword(nullptr),
       brokenSword(nullptr),
-      sword(nullptr) 
+      sword(nullptr),
+      lightBeam(nullptr) 
 {
 }
 
@@ -45,6 +46,7 @@ Renderer::~Renderer() {
     delete bonfire;
     delete brokenSword;
     delete sword;
+    delete lightBeam;
 }
 
 /**
@@ -74,6 +76,7 @@ bool Renderer::loadModels() {
         bonfireSword = new Model("models/bonfireSword/bonfire.obj");
         bonfire = new Model("models/bonfire/bonfire.obj");
         brokenSword = new Model("models/brokenSword/broken_sword.obj");
+        lightBeam = new Model("models/lightBeam/lightBeam.obj");
         return true;
     } catch (const std::exception& e) {
         std::cerr << "Failed to load models: " << e.what() << std::endl;
@@ -91,40 +94,51 @@ void Renderer::setupLighting(Shader& shader, float time) {
 
     shader.setVec3("viewPos", gameState->camera.Position);
 
-    // Minimal directional light for basic ambient fill.
+    // Primary illumination from overhead window light
     shader.setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
-    shader.setVec3("dirLight.ambient", 0.005f, 0.005f, 0.01f);
-    shader.setVec3("dirLight.diffuse", 0.05f, 0.05f, 0.08f);
+    shader.setVec3("dirLight.ambient", 0.7f, 0.65f, 0.55f);
+    shader.setVec3("dirLight.diffuse", 0.9f, 0.85f, 0.75f);
     shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
 
-    // Configure multiple point lights to simulate torch flickers.
+    // Configure point lights - only bonfire is active, others disabled
     for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
         std::string number = std::to_string(i);
-        glm::vec3 lightPos = POINT_LIGHT_POSITIONS[i];
-        shader.setVec3("pointLights[" + number + "].position", lightPos);
-        shader.setVec3("pointLights[" + number + "].ambient", 0.02f, 0.015f, 0.005f);
-
-        glm::vec3 baseDiffuse(1.2f, 0.6f, 0.15f);
-        float flicker = 0.85f + 0.15f * sin(time * 7.0f + i * 1.3f) * cos(time * 5.0f + i * 2.1f);
-        shader.setVec3("pointLights[" + number + "].diffuse", baseDiffuse * flicker);
-        shader.setVec3("pointLights[" + number + "].specular", 0.1f, 0.1f, 0.05f);
-
-        // Attenuation values for a realistic falloff.
-        shader.setFloat("pointLights[" + number + "].constant", 1.0f);
-        shader.setFloat("pointLights[" + number + "].linear", 0.25f);
-        shader.setFloat("pointLights[" + number + "].quadratic", 0.25f);
+        shader.setVec3("pointLights[" + number + "].position", POINT_LIGHT_POSITIONS[i]);
+        
+        if (i == 8) {
+            // Active bonfire light with flickering animation
+            float flicker = 0.9f + 0.1f * sin(time * 8.0f + i * 1.5f) * sin(time * 15.0f + i * 0.8f);
+            
+            shader.setVec3("pointLights[" + number + "].ambient", 0.15f * flicker, 0.08f * flicker, 0.03f * flicker);
+            shader.setVec3("pointLights[" + number + "].diffuse", 2.5f * flicker, 1.3f * flicker, 0.5f * flicker);
+            shader.setVec3("pointLights[" + number + "].specular", 0.0f, 0.0f, 0.0f);
+            
+            shader.setFloat("pointLights[" + number + "].constant", 1.0f);
+            shader.setFloat("pointLights[" + number + "].linear", 0.35f);
+            shader.setFloat("pointLights[" + number + "].quadratic", 1.2f);
+        } else {
+            // Disabled torch lights
+            shader.setVec3("pointLights[" + number + "].ambient", 0.0f, 0.0f, 0.0f);
+            shader.setVec3("pointLights[" + number + "].diffuse", 0.0f, 0.0f, 0.0f);
+            shader.setVec3("pointLights[" + number + "].specular", 0.0f, 0.0f, 0.0f);
+            
+            shader.setFloat("pointLights[" + number + "].constant", 1.0f);
+            shader.setFloat("pointLights[" + number + "].linear", 0.0f);
+            shader.setFloat("pointLights[" + number + "].quadratic", 0.0f);
+        }
     }
 
     shader.setFloat("material.shininess", 4.0f);
+    shader.setFloat("material.alpha", 1.0f);
 
-    // Fog settings for a dense, atmospheric effect.
+    // Atmospheric fog settings
     shader.setFloat("fogNear", 4.0f);
     shader.setFloat("fogFar", 7.0f);
     shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f);
 }
 
 /**
- * @brief Configures a specialized lighting setup for emissive objects like torches.
+ * @brief Configures lighting setup for emissive objects like the bonfire.
  * @param shader The shader program to configure.
  * @param time The current application time for animations.
  */
@@ -133,15 +147,17 @@ void Renderer::setupTorchLighting(Shader& shader, float time) {
     
     shader.setVec3("viewPos", gameState->camera.Position);
     
+    // Minimal directional lighting for emissive objects
     shader.setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
     shader.setVec3("dirLight.ambient", 0.01f, 0.005f, 0.002f);
     shader.setVec3("dirLight.diffuse", 0.1f, 0.08f, 0.05f);
     shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
     
     shader.setFloat("material.shininess", 2.0f);
-    shader.setFloat("material.emissiveStrength", 1.5f); // Controls glow intensity.
-    shader.setFloat("time", time); // For flicker effect in the shader.
+    shader.setFloat("material.emissiveStrength", 1.5f);
+    shader.setFloat("time", time);
     
+    // Atmospheric fog settings
     shader.setFloat("fogNear", 4.0f);
     shader.setFloat("fogFar", 7.0f);
     shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f);
@@ -198,7 +214,7 @@ void Renderer::renderBonfire(bool flag) {
  * @brief Renders the player's first-person sword model.
  * @param type A string indicating which sword model to render (e.g., "broken").
  */
-void Renderer::renderSword(string type) {
+void Renderer::renderSword(std::string type) {
     if (!swordShader || !sword || !brokenSword) return;
     
     setupLighting(*swordShader, static_cast<float>(glfwGetTime()));
@@ -247,11 +263,90 @@ void Renderer::renderSword(string type) {
 }
 
 /**
+ * @brief Renders the atmospheric light beam from the ceiling using volumetric layers.
+ */
+void Renderer::renderLightBeam() {
+    if (!levelShader || !lightBeam) return;
+    
+    // Configure alpha blending for light beam transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glDepthMask(GL_FALSE);
+    
+    // Configure bright self-illuminated lighting for the light beam
+    levelShader->use();
+    levelShader->setVec3("viewPos", gameState->camera.Position);
+    
+    levelShader->setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
+    levelShader->setVec3("dirLight.ambient", 2.5f, 2.5f, 2.0f);
+    levelShader->setVec3("dirLight.diffuse", 2.5f, 2.5f, 2.0f);
+    levelShader->setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
+    
+    // Disable all point lights for the light beam
+    for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
+        std::string number = std::to_string(i);
+        levelShader->setVec3("pointLights[" + number + "].diffuse", 0.0f, 0.0f, 0.0f);
+        levelShader->setVec3("pointLights[" + number + "].ambient", 0.0f, 0.0f, 0.0f);
+        levelShader->setVec3("pointLights[" + number + "].specular", 0.0f, 0.0f, 0.0f);
+    }
+    
+    levelShader->setFloat("material.shininess", 1.0f);
+    
+    // Disable fog for the light beam
+    levelShader->setFloat("fogNear", 999.0f);
+    levelShader->setFloat("fogFar", 1000.0f);
+
+    glm::mat4 view = gameState->camera.GetViewMatrix();
+    levelShader->setMat4("view", view);
+    levelShader->setMat4("projection", gameState->projection);
+
+    // Render volumetric light beam using multiple layered cones
+    const glm::vec3 beamPosition(0.0f, 2.5f, 0.0f);
+    const glm::vec3 beamScale(1.0f, 2.5f, 1.0f);
+    
+    // Layer 1: Outer cone
+    levelShader->setFloat("material.alpha", 0.15f);
+    glm::mat4 model1 = glm::mat4(1.0f);
+    model1 = glm::translate(model1, beamPosition);
+    model1 = glm::scale(model1, beamScale * glm::vec3(1.4f, 1.0f, 1.4f));
+    levelShader->setMat4("model", model1);
+    lightBeam->Draw(*levelShader);
+    
+    // Layer 2: Middle-outer cone
+    levelShader->setFloat("material.alpha", 0.25f);
+    glm::mat4 model2 = glm::mat4(1.0f);
+    model2 = glm::translate(model2, beamPosition);
+    model2 = glm::scale(model2, beamScale * glm::vec3(1.1f, 1.0f, 1.1f));
+    levelShader->setMat4("model", model2);
+    lightBeam->Draw(*levelShader);
+    
+    // Layer 3: Middle-inner cone
+    levelShader->setFloat("material.alpha", 0.35f);
+    glm::mat4 model3 = glm::mat4(1.0f);
+    model3 = glm::translate(model3, beamPosition);
+    model3 = glm::scale(model3, beamScale * glm::vec3(0.8f, 1.0f, 0.8f));
+    levelShader->setMat4("model", model3);
+    lightBeam->Draw(*levelShader);
+    
+    // Layer 4: Inner core
+    levelShader->setFloat("material.alpha", 0.5f);
+    glm::mat4 model4 = glm::mat4(1.0f);
+    model4 = glm::translate(model4, beamPosition);
+    model4 = glm::scale(model4, beamScale * glm::vec3(0.5f, 1.0f, 0.5f));
+    levelShader->setMat4("model", model4);
+    lightBeam->Draw(*levelShader);
+    
+    // Restore normal rendering state
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+}
+
+/**
  * @brief The main render loop function, called once per frame.
  */
 void Renderer::render() {
     // Clear the screen with a dark blue color to match the PS1 aesthetic.
-    glClearColor(0.01f, 0.01f, 0.02f, 1.0f);
+    glClearColor(0.05f, 0.05f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Update the projection matrix based on the current camera zoom and aspect ratio.
@@ -261,8 +356,9 @@ void Renderer::render() {
         0.1f, 100.0f
     );
 
-    // Render all scene components in order.
+    // Render all scene components in order
     renderLevel();
     renderBonfire(gameState->hasBrokenSword);
     renderSword(gameState->swordType);
+    renderLightBeam();
 }

@@ -4,6 +4,7 @@ out vec4 FragColor;
 struct Material {
     sampler2D diffuse;
     float shininess;
+    float alpha;  // Added material alpha support
     // Removed specular sampler2D since PS1 rarely used specular maps
 }; 
 
@@ -24,7 +25,7 @@ struct PointLight {
     vec3 specular;
 };
 
-#define NR_POINT_LIGHTS 8
+#define NR_POINT_LIGHTS 9
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -40,9 +41,9 @@ uniform float fogNear;
 uniform float fogFar;
 uniform vec3 fogColor;
 
-// PS1-style quantization levels
-const float COLOR_LEVELS = 32.0;  // Reduce this for more banding (try 16.0 or 8.0)
-const float LIGHTING_LEVELS = 8.0; // Quantize lighting calculations
+// PS1-style quantization levels - adjusted for more dramatic contrast
+const float COLOR_LEVELS = 40.0;  // Slightly reduced for more visible banding
+const float LIGHTING_LEVELS = 8.0; // Fewer levels for sharper light transitions
 
 // Function to quantize colors to PS1-style color depth
 vec3 quantizeColor(vec3 color, float levels) {
@@ -57,13 +58,13 @@ vec3 CalcPS1DirLight(DirLight light, vec3 normal) {
     float diff = max(dot(normal, lightDir), 0.0);
     diff = floor(diff * LIGHTING_LEVELS) / LIGHTING_LEVELS;
     
-    // Sample texture
-    vec3 texColor = texture(material.diffuse, TexCoords).rgb;
+    // Sample texture with alpha
+    vec4 texColor = texture(material.diffuse, TexCoords);
     
     // PS1 didn't have sophisticated ambient/diffuse separation
     // Just blend between dark and lit based on the quantized lighting
-    vec3 ambient = light.ambient * texColor * 0.3; // Darker ambient
-    vec3 diffuse = light.diffuse * diff * texColor;
+    vec3 ambient = light.ambient * texColor.rgb * 0.2; // Slightly darker ambient
+    vec3 diffuse = light.diffuse * diff * texColor.rgb;
     
     return ambient + diffuse;
 }
@@ -76,17 +77,21 @@ vec3 CalcPS1PointLight(PointLight light, vec3 normal, vec3 fragPos) {
     float diff = max(dot(normal, lightDir), 0.0);
     diff = floor(diff * LIGHTING_LEVELS) / LIGHTING_LEVELS;
     
-    // Harsh distance attenuation (PS1 had very simple distance calculations)
+    // Enhanced distance attenuation for sharper falloff
     float distance = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     
-    // Quantize the attenuation for that stepped falloff look
-    attenuation = floor(attenuation * LIGHTING_LEVELS) / LIGHTING_LEVELS;
+    // More aggressive quantization for sharper light boundaries
+    attenuation = floor(attenuation * (LIGHTING_LEVELS * 1.5)) / (LIGHTING_LEVELS * 1.5);
     
-    vec3 texColor = texture(material.diffuse, TexCoords).rgb;
+    // Enhance contrast - make bright areas brighter, dark areas darker
+    attenuation = pow(attenuation, 0.7); // Gamma-like adjustment for more contrast
     
-    vec3 ambient = light.ambient * texColor * 0.2;
-    vec3 diffuse = light.diffuse * diff * texColor;
+    vec4 texColor = texture(material.diffuse, TexCoords);
+    
+    // Reduced ambient to make shadows deeper
+    vec3 ambient = light.ambient * texColor.rgb * 0.1;
+    vec3 diffuse = light.diffuse * diff * texColor.rgb;
     
     return (ambient + diffuse) * attenuation;
 }
@@ -94,10 +99,14 @@ vec3 CalcPS1PointLight(PointLight light, vec3 normal, vec3 fragPos) {
 void main() {
     vec3 norm = normalize(Normal);
     
+    // Sample texture alpha for transparency, but also use material alpha
+    vec4 texSample = texture(material.diffuse, TexCoords);
+    float alpha = texSample.a * material.alpha;  // Combine texture and material alpha
+    
     // Start with directional lighting
     vec3 result = CalcPS1DirLight(dirLight, norm);
     
-    // Add point lights (now all 8 torches)
+    // Add point lights (now all 9 torches)
     for(int i = 0; i < NR_POINT_LIGHTS; i++) {
         result += CalcPS1PointLight(pointLights[i], norm, FragPos);
     }
@@ -123,5 +132,6 @@ void main() {
     // Clamp to prevent over-bright colors
     result = clamp(result, 0.0, 1.0);
     
-    FragColor = vec4(result, 1.0);
+    // Use combined alpha
+    FragColor = vec4(result, alpha);
 }

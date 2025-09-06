@@ -14,7 +14,7 @@ const float BOB_SPEED = 10.0f;
 const float MOVEMENT_THRESHOLD = 0.01f;
 
 // Lighting constants
-const int NUM_POINT_LIGHTS = 8;
+const int NUM_POINT_LIGHTS = 9;
 extern const glm::vec3 POINT_LIGHT_POSITIONS[NUM_POINT_LIGHTS];
 
 // Camera constants

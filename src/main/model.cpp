@@ -15,7 +15,7 @@
  * @param path The file path to the 3D model.
  * @param gamma A flag indicating whether to apply gamma correction.
  */
-Model::Model(string const &path, bool gamma) : gammaCorrection(gamma) {
+Model::Model(std::string const &path, bool gamma) : gammaCorrection(gamma) {
     loadModel(path);
 }
 
@@ -33,7 +33,7 @@ void Model::Draw(Shader &shader) {
  * @brief Loads a model from a file using Assimp.
  * @param path The file path of the model to load.
  */
-void Model::loadModel(string const &path) {
+void Model::loadModel(std::string const &path) {
     Assimp::Importer importer;
     // Read the model file with post-processing flags.
     const aiScene* scene = importer.ReadFile(path, 
@@ -42,7 +42,7 @@ void Model::loadModel(string const &path) {
 
     // Check for loading errors.
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
         return;
     }
 
@@ -76,9 +76,9 @@ void Model::processNode(aiNode *node, const aiScene *scene) {
  * @return A Mesh object containing the processed data.
  */
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
-    vector<Vertex> vertices;
-    vector<unsigned int> indices;
-    vector<Texture> textures;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<Texture> textures;
 
     // Extract vertex data.
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -136,16 +136,16 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
     // 1. Diffuse maps
-    vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. Specular maps
-    vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+    std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
     textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. Normal maps
-    vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+    std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. Height maps
-    vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+    std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // Return a new Mesh object created from the extracted data.
@@ -159,8 +159,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
  * @param typeName A string name for the texture type.
  * @return A vector of Texture objects.
  */
-vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName) {
-    vector<Texture> textures;
+std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName) {
+    std::vector<Texture> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
