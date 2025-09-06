@@ -21,6 +21,7 @@ public:
     
     void RenderCrosshair();
     void RenderInteractionPrompt(GameState* gameState);
+    void RenderPopup(GameState* gameState);
     void RenderMenu();
     void ToggleMenu();
     

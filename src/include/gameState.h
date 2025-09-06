@@ -35,6 +35,8 @@ public:
     // Interaction
     bool showInteractionPrompt = false;
     std::string interactionText = "";
+    std::string interactionPopup = "";
+    float popupTimer = 0.0f;
 
     // New: sword/bonfire state exposed to other systems
     bool hasBrokenSword = false;
@@ -49,6 +51,7 @@ public:
     void updateMovement();
 
     void updateInteraction(GLFWwindow* window);
+    void updatePopup();
 };
 
 #endif

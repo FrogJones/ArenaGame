@@ -108,13 +108,16 @@ void GameState::updateInteraction(GLFWwindow* window) {
             // A single-press debounce mechanism.
             eKeyPressed = true; 
             
-            // Handle the interaction and check if it was successful.
-            bool interacted = interactionSystem.HandleInteraction(camera.Position);
+            // Handle the interaction and get the popup message.
+            bool interacted = interactionSystem.HandleInteraction(camera.Position, interactionPopup);
 
             if (interacted) {
                 // Immediately hide the prompt to provide instant feedback.
                 showInteractionPrompt = false;
                 interactionText.clear();
+                
+                // Start the popup timer (3 seconds)
+                popupTimer = 3.0f;
             }
         } else if (state == GLFW_RELEASE) {
             // Allow the key to be pressed again on the next frame.
@@ -123,5 +126,18 @@ void GameState::updateInteraction(GLFWwindow* window) {
     } else {
         // Ensure the key can be pressed if the player moves away and then back.
         eKeyPressed = false;
+    }
+}
+
+/**
+ * @brief Updates the popup timer and clears the popup when it expires.
+ */
+void GameState::updatePopup() {
+    if (popupTimer > 0.0f) {
+        popupTimer -= deltaTime;
+        if (popupTimer <= 0.0f) {
+            interactionPopup.clear();
+            popupTimer = 0.0f;
+        }
     }
 }

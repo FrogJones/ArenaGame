@@ -106,7 +106,7 @@ void GUI::RenderInteractionPrompt(GameState* gameState) {
    
     // Use a transparent, borderless window to act as a container for the text.
     ImGui::SetNextWindowPos(ImVec2(centerX, centerY), ImGuiCond_Always, ImVec2(0.5f, 0.5f)); // Centered pivot.
-    ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background.
+    ImGui::SetNextWindowBgAlpha(0.5f); // semi-transparent background.
     ImGui::Begin("InteractionPrompt", nullptr,
         ImGuiWindowFlags_NoTitleBar |
         ImGuiWindowFlags_NoResize |
@@ -117,6 +117,35 @@ void GUI::RenderInteractionPrompt(GameState* gameState) {
     // Render the interaction text.
     ImGui::Text("%s", gameState->interactionText.c_str());
    
+    ImGui::End();
+}
+
+/**
+ * @brief Renders popup messages when interactions occur at the bottom-left corner.
+ * @param gameState The current game state, containing popup text.
+ */
+void GUI::RenderPopup(GameState* gameState) {
+    if (gameState->interactionPopup.empty()) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+    // Position the popup at the bottom-left corner.
+    float posX = io.DisplaySize.x * 0.02f;
+    float posY = io.DisplaySize.y * 0.95f;
+    
+    ImGui::SetNextWindowPos(ImVec2(posX, posY), ImGuiCond_Always, ImVec2(0.0f, 1.0f)); // Bottom-left pivot.
+    ImGui::SetNextWindowBgAlpha(0.8f); // Semi-transparent background for visibility.
+    ImGui::Begin("Popup", nullptr,
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_AlwaysAutoResize |
+        ImGuiWindowFlags_NoBackground
+    );
+
+    // Scale the text to be larger for better visibility
+    ImGui::SetWindowFontScale(1.5f); // 1.5x larger text
+    ImGui::Text("%s", gameState->interactionPopup.c_str());
+    
     ImGui::End();
 }
 
@@ -132,6 +161,7 @@ void GUI::Render(GameState* gameState) {
             RenderCrosshair();
         }
         RenderInteractionPrompt(gameState);
+        RenderPopup(gameState);
     }
     
     // Finalize the ImGui frame and render its draw data.

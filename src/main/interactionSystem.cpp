@@ -23,9 +23,9 @@ bool InteractionSystem::initialize() {
  * @param text The prompt text to display to the player (e.g., "E - Open").
  * @param callback The function to execute when the player interacts with the object.
  */
-void InteractionSystem::AddInteractable(const glm::vec3& pos, const std::string& text, std::function<void()> callback) {
+void InteractionSystem::AddInteractable(const glm::vec3& pos, const std::string& text, const std::string& popup, std::function<void()> callback) {
     // Emplace_back is slightly more efficient than push_back as it constructs the object in-place.
-    interactables.emplace_back(pos, 1.0f, text, std::move(callback));
+    interactables.emplace_back(pos, 1.0f, text, popup, std::move(callback));
 }
 
 /**
@@ -51,9 +51,10 @@ bool InteractionSystem::CheckInteractions(const glm::vec3& playerPos, std::strin
 /**
  * @brief Executes the interaction for the nearest object to the player.
  * @param playerPos The current position of the player's camera.
+ * @param outPopup [out] The popup message from the interacted object.
  * @return True if an interaction was successfully handled, false otherwise.
  */
-bool InteractionSystem::HandleInteraction(const glm::vec3& playerPos) {
+bool InteractionSystem::HandleInteraction(const glm::vec3& playerPos, std::string& outPopup) {
     for (auto& obj : interactables) {
         if (obj.consumed) continue;
 
@@ -63,6 +64,8 @@ bool InteractionSystem::HandleInteraction(const glm::vec3& playerPos) {
             if (obj.onInteract) {
                 obj.onInteract();
             }
+            // Pass back the popup text.
+            outPopup = obj.popupText;
             // Mark the object as consumed to prevent re-interaction.
             obj.consumed = true;
             return true;
@@ -76,24 +79,4 @@ bool InteractionSystem::HandleInteraction(const glm::vec3& playerPos) {
  */
 void InteractionSystem::ClearInteractables() {
     interactables.clear();
-}
-
-/**
- * @brief Removes a specific interactable object based on its position.
- * @param pos The position of the object to remove.
- * @param tol A tolerance radius to account for floating-point inaccuracies.
- * @return True if an object was found and removed, false otherwise.
- */
-bool InteractionSystem::RemoveInteractable(const glm::vec3& pos, float tol) {
-    // Use the erase-remove idiom to efficiently remove all matching elements.
-    auto it = std::remove_if(interactables.begin(), interactables.end(),
-        [&](const InteractableObject& obj) {
-            return glm::length(obj.position - pos) <= tol;
-        });
-
-    if (it != interactables.end()) {
-        interactables.erase(it, interactables.end());
-        return true;
-    }
-    return false;
 }

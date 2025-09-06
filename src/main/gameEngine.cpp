@@ -109,6 +109,7 @@ void GameEngine::run() {
         // 2. Update game state (player movement, interactions).
         gameState.updateMovement();
         gameState.updateInteraction(window);
+        gameState.updatePopup();
         
         // 3. Update systems that depend on game state (e.g., audio).
         handleMovementAudio();
@@ -270,7 +271,7 @@ void GameEngine::setupGameInteractions() {
     // Creates the interactable object for the broken sword at the bonfire.
     gameState.interactionSystem.AddInteractable(
         glm::vec3(0.0f, 1.0f, 0.0f),
-        "E - Pull out.",
+        "E - Pull out.", "Broken sword acquired.",
         [this]() {
             // This lambda function is executed when the player interacts.
             gameState.hasBrokenSword = true;
