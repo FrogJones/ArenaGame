@@ -6,14 +6,16 @@
 
 class Item {
 public:
-    Item(const std::string& name, int quantity, const std::string& imagePath);
+    Item(const std::string& name, const std::string& description, int quantity, const std::string& imagePath);
     std::string getName() const;
+    std::string getDescription() const;
     int getQuantity() const;
     void setQuantity(int quantity);
     std::string getImagePath() const;
 
 private:
     std::string name;
+    std::string description;
     int quantity;
     std::string imagePath;
 };

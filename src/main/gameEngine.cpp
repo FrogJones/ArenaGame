@@ -26,9 +26,7 @@ GameEngine::GameEngine()
       inputHandler(nullptr),
       renderer(nullptr),
       audioManager(nullptr),
-      gui(nullptr),
-      ambianceBuffer(0),
-      ambianceSource(0)
+      gui(nullptr)
 {
     // Seed the random number generator once for application-wide use.
     std::srand(static_cast<unsigned>(std::time(nullptr)));
@@ -228,9 +226,9 @@ bool GameEngine::loadAudioAssets() {
     }
 
     // Load and play the looping ambient background sound.
-    ambianceBuffer = audioManager->loadAudio("sfx/env/ambiance.wav");
+    ALuint ambianceBuffer = audioManager->loadAudio("sfx/env/ambiance.wav");
     if (ambianceBuffer != 0) {
-        ambianceSource = audioManager->playSound(ambianceBuffer, true); // Loop enabled.
+        ALuint ambianceSource = audioManager->playSound(ambianceBuffer, true); // Loop enabled.
         if (ambianceSource != 0) {
             alSourcef(ambianceSource, AL_GAIN, 0.2f); // Set a lower volume for ambiance.
             // Make the sound non-positional so it's always heard at the same volume.
@@ -240,6 +238,8 @@ bool GameEngine::loadAudioAssets() {
     } else {
         std::cerr << "Warning: Failed to load ambiance.wav. The world will be eerily quiet." << std::endl;
     }
+
+    swordPickupBuffer = audioManager->loadAudio("sfx/sword/draw.wav");
 
     return true;
 }
@@ -276,7 +276,10 @@ void GameEngine::setupGameInteractions() {
             // This lambda function is executed when the player interacts.
             gameState.hasBrokenSword = true;
             gameState.swordType = "broken";
-            std::cout << "Interaction: Broken sword picked up!" << std::endl;
+            if (swordPickupBuffer != 0) {
+                audioManager->playSound(swordPickupBuffer);
+            }
+            // !!!! TO DO Add the broken sword to the player's inventory. !!!!
         }
     );
 

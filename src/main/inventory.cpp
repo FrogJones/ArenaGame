@@ -13,8 +13,8 @@
  * @param quantity The number of this item.
  * @param imagePath The file path to the item's UI texture.
  */
-Item::Item(const std::string& name, int quantity, const std::string& imagePath)
-    : name(name), quantity(quantity), imagePath(imagePath) {}
+Item::Item(const std::string& name, const std::string& description, int quantity, const std::string& imagePath)
+    : name(name), description(description), quantity(quantity), imagePath(imagePath) {}
 
 /**
  * @brief Gets the name of the item.
@@ -38,6 +38,10 @@ int Item::getQuantity() const {
  */
 std::string Item::getImagePath() const {
     return imagePath;
+}
+
+std::string Item::getDescription() const {
+    return description;
 }
 
 /**

@@ -25,8 +25,7 @@ private:
     
     // Audio
     std::vector<ALuint> stepSounds;
-    ALuint ambianceBuffer;
-    ALuint ambianceSource;
+    ALuint swordPickupBuffer;
     
 public:
     GameEngine();
