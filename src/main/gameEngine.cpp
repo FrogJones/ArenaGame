@@ -1,11 +1,3 @@
-/**
- * @file gameEngine.cpp
- * @brief Main orchestrator for the game, managing initialization, the game loop, and cleanup.
- *
- * This file contains the core logic that brings all the subsystems (renderer, input, audio, UI)
- * together. It's responsible for the game's lifecycle from start to finish.
- */
-
 #include "gameEngine.h"
 #include "config.h"
 #include "items.h"
@@ -14,14 +6,10 @@
 #include <cstdlib>
 #include <ctime>
 
-// Define STB_IMAGE_IMPLEMENTATION in one and only one CPP file to create the implementation.
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <glm/glm.hpp>
 
-/**
- * @brief Constructs the GameEngine, initializing all subsystem pointers to null.
- */
 GameEngine::GameEngine() 
     : window(nullptr),
       inputHandler(nullptr),
@@ -29,23 +17,14 @@ GameEngine::GameEngine()
       audioManager(nullptr),
       gui(nullptr)
 {
-    // Seed the random number generator once for application-wide use.
     std::srand(static_cast<unsigned>(std::time(nullptr)));
 }
 
-/**
- * @brief Destroys the GameEngine, ensuring all resources are cleaned up.
- */
 GameEngine::~GameEngine() {
     cleanup();
 }
 
-/**
- * @brief Initializes all game subsystems in the correct order.
- * @return True if all subsystems initialize successfully, false otherwise.
- */
 bool GameEngine::initialize() {
-    // Initialize core libraries (GLFW, GLAD) and create the window.
     window = initializeGLFW();
     if (!window) {
         std::cerr << "FATAL: Failed to initialize GLFW window" << std::endl;
@@ -57,18 +36,13 @@ bool GameEngine::initialize() {
         return false;
     }
 
-    // Configure global OpenGL state.
     glEnable(GL_DEPTH_TEST);
     
-    // Set texture filtering to nearest-neighbor for a retro, pixelated aesthetic.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    // Most 3D models are authored with textures that expect Y-up, but OpenGL's
-    // texture coordinates are Y-down. This flips them to match.
     stbi_set_flip_vertically_on_load(true);
 
-    // Initialize game-specific managers.
     inputHandler = new InputHandler(&gameState);
     inputHandler->setupCallbacks(window);
 

@@ -43,6 +43,8 @@ public:
     bool showMenu = false;
     bool showInventory = false;
     bool showCrosshair = true;
+    bool showItemDescription = false;
+    std::string selectedItemDescription = "";
 
     // New: sword/bonfire state exposed to other systems
     bool hasBrokenSword = false;

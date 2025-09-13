@@ -1,12 +1,3 @@
-/**
- * @file renderer.cpp
- * @brief Implements the main rendering logic for the application.
- *
- * This file contains the implementation of the Renderer class, which is responsible
- * for all drawing operations. It manages shaders, models, lighting, and the
- * rendering of different game objects like the level, bonfire, and the player's sword.
- */
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "renderer.h"
@@ -16,10 +7,6 @@
 #include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
-/**
- * @brief Constructs the Renderer.
- * @param state A pointer to the shared GameState object.
- */
 Renderer::Renderer(GameState* state) 
     : gameState(state), 
       levelShader(nullptr), 
@@ -34,9 +21,6 @@ Renderer::Renderer(GameState* state)
 {
 }
 
-/**
- * @brief Destroys the Renderer, cleaning up all allocated resources.
- */
 Renderer::~Renderer() {
     delete levelShader;
     delete swordShader;
@@ -84,77 +68,61 @@ bool Renderer::loadModels() {
     }
 }
 
-/**
- * @brief Configures the lighting and fog for the main scene shader.
- * @param shader The shader program to configure.
- * @param time The current application time for animations.
- */
 void Renderer::setupLighting(Shader& shader, float time) {
     shader.use();
 
     shader.setVec3("viewPos", gameState->camera.Position);
 
-    // Primary illumination from overhead window light
-    shader.setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
-    shader.setVec3("dirLight.ambient", 0.7f, 0.65f, 0.55f);
-    shader.setVec3("dirLight.diffuse", 0.9f, 0.85f, 0.75f);
-    shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
+    shader.setVec3("dirLight.direction", DIR_LIGHT_DIRECTION);
+    shader.setVec3("dirLight.ambient", DIR_LIGHT_AMBIENT);
+    shader.setVec3("dirLight.diffuse", DIR_LIGHT_DIFFUSE);
+    shader.setVec3("dirLight.specular", DIR_LIGHT_SPECULAR);
 
-    // Configure point lights - only bonfire is active, others disabled
     for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
         std::string number = std::to_string(i);
         shader.setVec3("pointLights[" + number + "].position", POINT_LIGHT_POSITIONS[i]);
         
-        if (i == 8) {
-            // Active bonfire light with flickering animation
-            float flicker = 0.9f + 0.1f * sin(time * 8.0f + i * 1.5f) * sin(time * 15.0f + i * 0.8f);
+        if (i == BONFIRE_LIGHT_INDEX) {
+            float flicker = FLICKER_BASE + FLICKER_AMPLITUDE * sin(time * FLICKER_FREQ1 + i * FLICKER_PHASE1) * sin(time * FLICKER_FREQ2 + i * FLICKER_PHASE2);
             
-            shader.setVec3("pointLights[" + number + "].ambient", 0.15f * flicker, 0.08f * flicker, 0.03f * flicker);
-            shader.setVec3("pointLights[" + number + "].diffuse", 2.5f * flicker, 1.3f * flicker, 0.5f * flicker);
-            shader.setVec3("pointLights[" + number + "].specular", 0.0f, 0.0f, 0.0f);
+            shader.setVec3("pointLights[" + number + "].ambient", BONFIRE_AMBIENT_BASE * flicker);
+            shader.setVec3("pointLights[" + number + "].diffuse", BONFIRE_DIFFUSE_BASE * flicker);
+            shader.setVec3("pointLights[" + number + "].specular", BONFIRE_SPECULAR);
             
-            shader.setFloat("pointLights[" + number + "].constant", 1.0f);
-            shader.setFloat("pointLights[" + number + "].linear", 0.35f);
-            shader.setFloat("pointLights[" + number + "].quadratic", 1.2f);
+            shader.setFloat("pointLights[" + number + "].constant", LIGHT_CONSTANT);
+            shader.setFloat("pointLights[" + number + "].linear", BONFIRE_LINEAR);
+            shader.setFloat("pointLights[" + number + "].quadratic", BONFIRE_QUADRATIC);
         } else {
-            // Disabled torch lights
-            shader.setVec3("pointLights[" + number + "].ambient", 0.0f, 0.0f, 0.0f);
-            shader.setVec3("pointLights[" + number + "].diffuse", 0.0f, 0.0f, 0.0f);
-            shader.setVec3("pointLights[" + number + "].specular", 0.0f, 0.0f, 0.0f);
+            shader.setVec3("pointLights[" + number + "].ambient", REGULAR_LIGHT_COLOR);
+            shader.setVec3("pointLights[" + number + "].diffuse", REGULAR_LIGHT_COLOR);
+            shader.setVec3("pointLights[" + number + "].specular", REGULAR_LIGHT_COLOR);
             
-            shader.setFloat("pointLights[" + number + "].constant", 1.0f);
-            shader.setFloat("pointLights[" + number + "].linear", 0.0f);
-            shader.setFloat("pointLights[" + number + "].quadratic", 0.0f);
+            shader.setFloat("pointLights[" + number + "].constant", LIGHT_CONSTANT);
+            shader.setFloat("pointLights[" + number + "].linear", REGULAR_LINEAR);
+            shader.setFloat("pointLights[" + number + "].quadratic", REGULAR_QUADRATIC);
         }
     }
 
-    shader.setFloat("material.shininess", 4.0f);
-    shader.setFloat("material.alpha", 1.0f);
+    shader.setFloat("material.shininess", MATERIAL_SHININESS);
+    shader.setFloat("material.alpha", MATERIAL_ALPHA);
 
-    // Atmospheric fog settings
-    shader.setFloat("fogNear", 4.0f);
-    shader.setFloat("fogFar", 7.0f);
-    shader.setVec3("fogColor", 0.02f, 0.02f, 0.04f);
+    shader.setFloat("fogNear", FOG_NEAR);
+    shader.setFloat("fogFar", FOG_FAR);
+    shader.setVec3("fogColor", FOG_COLOR);
 }
 
-/**
- * @brief Configures lighting setup for emissive objects like the bonfire.
- * @param shader The shader program to configure.
- * @param time The current application time for animations.
- */
 void Renderer::setupTorchLighting(Shader& shader, float time) {
     shader.use();
     
     shader.setVec3("viewPos", gameState->camera.Position);
     
-    // Minimal directional lighting for emissive objects
-    shader.setVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
-    shader.setVec3("dirLight.ambient", 0.01f, 0.005f, 0.002f);
-    shader.setVec3("dirLight.diffuse", 0.1f, 0.08f, 0.05f);
-    shader.setVec3("dirLight.specular", 0.0f, 0.0f, 0.0f);
+    shader.setVec3("dirLight.direction", DIR_LIGHT_DIRECTION);
+    shader.setVec3("dirLight.ambient", TORCH_DIR_AMBIENT);
+    shader.setVec3("dirLight.diffuse", TORCH_DIR_DIFFUSE);
+    shader.setVec3("dirLight.specular", DIR_LIGHT_SPECULAR);
     
-    shader.setFloat("material.shininess", 2.0f);
-    shader.setFloat("material.emissiveStrength", 1.5f);
+    shader.setFloat("material.shininess", TORCH_SHININESS);
+    shader.setFloat("material.emissiveStrength", TORCH_EMISSIVE_STRENGTH);
     shader.setFloat("time", time);
     
     // Atmospheric fog settings

@@ -14,7 +14,7 @@ Too frail to serve as a true weapon, it will not carry one far. Yet a faint warm
 
 left by a nameless warrior who sought comfort in the fire, entrusting their last strength to the embers.)",
             1,
-            "icons/broken_sword.png"
+            "textures/brokenSword.png"
         );
     }
     
